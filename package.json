@@ -10,10 +10,11 @@
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "@hi-ui/hiui": "4.16.5"
+    "@hi-ui/hiui": "4.16.5",
+    "tslib": "^2.6.2"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",
-    "vite": "^4.0.0"
+    "vite": "^4.5.0"
   }
 }
