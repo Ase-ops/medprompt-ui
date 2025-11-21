@@ -26,7 +26,7 @@ export default function App() {
       formData.append("dicom_file", file)
       formData.append("prompt", prompt)
 
-      const res = await fetch("https://your-backend-endpoint.onrender.com/analyze", {
+      const res = await fetch("https://medprompt-backend.onrender.com/analyze", {
         method: "POST",
         body: formData
       })
