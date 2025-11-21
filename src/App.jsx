@@ -7,40 +7,47 @@ export default function App() {
   const [response, setResponse] = useState(null)
   const [loading, setLoading] = useState(false)
 
-  const isDicom = (file) => file?.type === 'application/dicom' || file?.name?.endsWith('.dcm')
+  const backendUrl = "https://medprompt-backend.onrender.com/analyze" // ← CHANGE THIS!
+
+  const beforeUpload = (file) => {
+    const isDicom = file.name.toLowerCase().endsWith('.dcm')
+    if (!isDicom) {
+      Notification.open({
+        title: '⛔ Only DICOM files are allowed (.dcm)',
+        type: 'error'
+      })
+    }
+    return isDicom
+  }
 
   async function analyze() {
     if (!file || !prompt) {
-      Notification.open({ title: '⚠️ Please upload a DICOM file and enter a prompt', type: 'warning' })
+      Notification.open({ title: '⚠️ Please upload a file and enter a prompt', type: 'warning' })
       return
     }
 
-    if (!isDicom(file)) {
-      Notification.open({ title: '❌ File must be a DICOM (.dcm) file', type: 'error' })
-      return
-    }
+    setLoading(true)
 
     try {
-      setLoading(true)
       const formData = new FormData()
       formData.append("dicom_file", file)
       formData.append("prompt", prompt)
 
-      const res = await fetch("https://medprompt-backend.onrender.com/analyze", {
+      const res = await fetch(backendUrl, {
         method: "POST",
         body: formData
       })
 
       if (!res.ok) {
-        throw new Error(`Server responded with ${res.status}`)
+        throw new Error(`Backend error: ${res.status}`)
       }
 
       const data = await res.json()
       setResponse(data)
 
       Notification.open({ title: '✅ Analysis complete', type: 'success' })
-    } catch (error) {
-      Notification.open({ title: `🚫 ${error.message}`, type: 'error' })
+    } catch (err) {
+      Notification.open({ title: '❌ Failed to analyze file', content: err.message, type: 'error' })
     } finally {
       setLoading(false)
     }
@@ -52,33 +59,34 @@ export default function App() {
 
       <Upload
         accept=".dcm"
-        onChange={f => setFile(f[0]?.originFileObj)}
-        style={{ marginBottom: 16 }}
+        beforeUpload={beforeUpload}
+        onChange={f => setFile(f[0].originFileObj)}
       />
 
       <Input
         placeholder="Describe your prompt..."
         value={prompt}
         onChange={e => setPrompt(e.target.value)}
-        style={{ marginBottom: 16 }}
+        style={{ marginTop: 16 }}
       />
 
       <Button
         type="primary"
         onClick={analyze}
         loading={loading}
+        style={{ marginTop: 16 }}
       >
-        🔍 Analyze File
+        🔍 Analyze
       </Button>
 
       {response && (
         <div style={{ marginTop: 32 }}>
-          <p><b>📝 Findings:</b> {response.findings}</p>
-          <p><b>📊 Confidence:</b> {response.ai_confidence}</p>
+          <p><b>Findings:</b> {response.findings}</p>
+          <p><b>Confidence:</b> {response.ai_confidence}</p>
           {response.image_preview_base64 && (
             <img
               src={`data:image/png;base64,${response.image_preview_base64}`}
-              alt="AI Preview"
+              alt="Preview"
               style={{ marginTop: 16, maxWidth: '100%' }}
             />
           )}
@@ -87,4 +95,3 @@ export default function App() {
     </div>
   )
 }
-
