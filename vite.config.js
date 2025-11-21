@@ -4,9 +4,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    proxy: {
-      '/analyze': 'http://localhost:8001',
-      '/feedback': 'http://localhost:8001'
-    }
+  proxy: {
+    '/analyze': 'https://medprompt-backend.onrender.com',
+    '/feedback': 'https://medprompt-backend.onrender.com'
   }
-})
+}
