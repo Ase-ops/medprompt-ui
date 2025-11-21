@@ -7,7 +7,7 @@ export default function App() {
   const [response, setResponse] = useState(null)
   const [loading, setLoading] = useState(false)
 
-  const backendUrl = "https://medprompt-backend.onrender.com/analyze" // ← CHANGE THIS!
+  const backendUrl = "https://medprompt-backend.onrender.com/analyze"
 
   const beforeUpload = (file) => {
     const isDicom = file.name.toLowerCase().endsWith('.dcm')
@@ -27,7 +27,6 @@ export default function App() {
     }
 
     setLoading(true)
-
     try {
       const formData = new FormData()
       formData.append("dicom_file", file)
@@ -39,13 +38,13 @@ export default function App() {
       })
 
       if (!res.ok) {
-        throw new Error(`Backend error: ${res.status}`)
+        throw new Error(`Backend error: ${res.statusText}`)
       }
 
       const data = await res.json()
       setResponse(data)
-
       Notification.open({ title: '✅ Analysis complete', type: 'success' })
+
     } catch (err) {
       Notification.open({ title: '❌ Failed to analyze file', content: err.message, type: 'error' })
     } finally {
@@ -95,3 +94,5 @@ export default function App() {
     </div>
   )
 }
+
+
