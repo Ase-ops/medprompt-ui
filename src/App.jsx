@@ -7,8 +7,8 @@ export default function App() {
   const [response, setResponse] = useState(null)
 
   async function analyze() {
-    if (!file || !prompt) {
-      Notification.open({ title: '⚠️ Please upload a file and enter a prompt.', type: 'warning' })
+    if (!file || !prompt.trim()) {
+      Notification.open({ title: '⚠️ Please upload a file and enter a prompt', type: 'warning' })
       return
     }
 
@@ -19,46 +19,59 @@ export default function App() {
     try {
       const res = await fetch("https://medprompt-backend.onrender.com/analyze", {
         method: "POST",
-        body: formData,
+        body: formData
       })
 
       if (!res.ok) {
-        throw new Error(`Server responded with ${res.status}`)
+        throw new Error("Failed to fetch from backend")
       }
 
       const data = await res.json()
       setResponse(data)
+
       Notification.open({ title: '✅ Analysis complete', type: 'success' })
-    } catch (error) {
-      console.error("Error during analysis:", error)
-      Notification.open({ title: '❌ Analysis failed', type: 'danger', content: error.message })
+    } catch (err) {
+      console.error(err)
+      Notification.open({ title: '❌ Error analyzing file', type: 'danger' })
     }
   }
 
   return (
     <div style={{ padding: 32 }}>
       <h2>🩺 MedPrompt + HIUI</h2>
-      <Upload onChange={f => setFile(f[0]?.originFileObj)} />
+
+      <Upload
+        onChange={(files) => {
+          const raw = files?.[0]?.originFileObj
+          if (raw) setFile(raw)
+        }}
+        uploadAction="#"
+        style={{ marginBottom: 16 }}
+      />
+
       <Input
         placeholder="Describe your prompt..."
         value={prompt}
         onChange={e => setPrompt(e.target.value)}
-        style={{ marginTop: 16 }}
+        style={{ marginBottom: 16 }}
       />
-      <Button type="primary" onClick={analyze} style={{ marginTop: 16 }}>
+
+      <Button type="primary" onClick={analyze}>
         🔍 Analyze
       </Button>
+
       {response && (
         <div style={{ marginTop: 32 }}>
-          <p><b>Findings:</b> {response.findings}</p>
-          <p><b>Confidence:</b> {response.ai_confidence}</p>
+          <p><b>🧠 Findings:</b> {response.findings}</p>
+          <p><b>📊 Confidence:</b> {response.ai_confidence}</p>
           <img
             src={`data:image/png;base64,${response.image_preview_base64}`}
-            alt="Preview"
-            style={{ marginTop: 16, maxWidth: '100%' }}
+            alt="DICOM Preview"
+            style={{ marginTop: 16, maxWidth: "100%", border: '1px solid #ddd' }}
           />
         </div>
       )}
     </div>
   )
 }
+
