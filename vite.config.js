@@ -5,13 +5,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/analyze': 'https://medprompt-backend.onrender.com',  // Replace with your actual Render backend URL
+      '/analyze': 'https://medprompt-backend.onrender.com',
       '/feedback': 'https://medprompt-backend.onrender.com'
-    }
-  },
-  build: {
-    rollupOptions: {
-      external: ['tslib']
     }
   }
 })
