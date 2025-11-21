@@ -7,24 +7,38 @@ export default function App() {
   const [response, setResponse] = useState(null)
 
   async function analyze() {
+    if (!file || !prompt) {
+      Notification.open({ title: '⚠️ Please upload a file and enter a prompt.', type: 'warning' })
+      return
+    }
+
     const formData = new FormData()
     formData.append("dicom_file", file)
     formData.append("prompt", prompt)
 
-    const res = await fetch("/analyze", {
-      method: "POST",
-      body: formData
-    })
+    try {
+      const res = await fetch("https://medprompt-backend.onrender.com/analyze", {
+        method: "POST",
+        body: formData,
+      })
 
-    const data = await res.json()
-    setResponse(data)
-    Notification.open({ title: '✅ Analysis complete', type: 'success' })
+      if (!res.ok) {
+        throw new Error(`Server responded with ${res.status}`)
+      }
+
+      const data = await res.json()
+      setResponse(data)
+      Notification.open({ title: '✅ Analysis complete', type: 'success' })
+    } catch (error) {
+      console.error("Error during analysis:", error)
+      Notification.open({ title: '❌ Analysis failed', type: 'danger', content: error.message })
+    }
   }
 
   return (
     <div style={{ padding: 32 }}>
       <h2>🩺 MedPrompt + HIUI</h2>
-      <Upload onChange={f => setFile(f[0].originFileObj)} />
+      <Upload onChange={f => setFile(f[0]?.originFileObj)} />
       <Input
         placeholder="Describe your prompt..."
         value={prompt}
@@ -38,7 +52,11 @@ export default function App() {
         <div style={{ marginTop: 32 }}>
           <p><b>Findings:</b> {response.findings}</p>
           <p><b>Confidence:</b> {response.ai_confidence}</p>
-          <img src={`data:image/png;base64,${response.image_preview_base64}`} alt="Preview" />
+          <img
+            src={`data:image/png;base64,${response.image_preview_base64}`}
+            alt="Preview"
+            style={{ marginTop: 16, maxWidth: '100%' }}
+          />
         </div>
       )}
     </div>
