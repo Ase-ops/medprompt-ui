@@ -7,7 +7,7 @@ export default function App() {
   const [response, setResponse] = useState(null)
   const [loading, setLoading] = useState(false)
 
-  const backendUrl = "https://medprompt-backend.onrender.com/analyze"
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://medprompt-backend.onrender.com/analyze"
 
   const beforeUpload = (file) => {
     const isDicom = file.name.toLowerCase().endsWith('.dcm')
@@ -38,16 +38,18 @@ export default function App() {
         body: formData
       })
 
-      if (!res.ok) {
-        throw new Error(`Backend error: ${res.status}`)
-      }
+      if (!res.ok) throw new Error(`Backend error: ${res.status}`)
 
       const data = await res.json()
       setResponse(data)
 
       Notification.open({ title: '✅ Analysis complete', type: 'success' })
     } catch (err) {
-      Notification.open({ title: '❌ Failed to analyze file', content: err.message, type: 'error' })
+      Notification.open({
+        title: '❌ Failed to analyze file',
+        content: err.message,
+        type: 'error'
+      })
     } finally {
       setLoading(false)
     }
@@ -60,7 +62,7 @@ export default function App() {
       <Upload
         accept=".dcm"
         beforeUpload={beforeUpload}
-        onChange={f => setFile(f[0].originFileObj)}
+        onChange={f => setFile(f[0]?.originFileObj)}
       />
 
       <Input
@@ -81,11 +83,8 @@ export default function App() {
 
       {response && (
         <div style={{ marginTop: 32 }}>
-          <p><b>🧠 Findings:</b> {response.findings}</p>
-          <p><b>👤 Patient:</b> {response.patient}</p>
-          <p><b>📅 Study Date:</b> {response.study_date}</p>
-          <p><b>🧪 Modality:</b> {response.modality}</p>
-          <p><b>📈 Confidence:</b> {response.ai_confidence}</p>
+          <p><b>Findings:</b> {response.findings}</p>
+          <p><b>Confidence:</b> {response.ai_confidence}</p>
           {response.image_preview_base64 && (
             <img
               src={`data:image/png;base64,${response.image_preview_base64}`}
