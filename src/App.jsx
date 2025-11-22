@@ -27,6 +27,7 @@ export default function App() {
     }
 
     setLoading(true)
+
     try {
       const formData = new FormData()
       formData.append("dicom_file", file)
@@ -38,13 +39,13 @@ export default function App() {
       })
 
       if (!res.ok) {
-        throw new Error(`Backend error: ${res.statusText}`)
+        throw new Error(`Backend error: ${res.status}`)
       }
 
       const data = await res.json()
       setResponse(data)
-      Notification.open({ title: '✅ Analysis complete', type: 'success' })
 
+      Notification.open({ title: '✅ Analysis complete', type: 'success' })
     } catch (err) {
       Notification.open({ title: '❌ Failed to analyze file', content: err.message, type: 'error' })
     } finally {
@@ -80,8 +81,11 @@ export default function App() {
 
       {response && (
         <div style={{ marginTop: 32 }}>
-          <p><b>Findings:</b> {response.findings}</p>
-          <p><b>Confidence:</b> {response.ai_confidence}</p>
+          <p><b>🧠 Findings:</b> {response.findings}</p>
+          <p><b>👤 Patient:</b> {response.patient}</p>
+          <p><b>📅 Study Date:</b> {response.study_date}</p>
+          <p><b>🧪 Modality:</b> {response.modality}</p>
+          <p><b>📈 Confidence:</b> {response.ai_confidence}</p>
           {response.image_preview_base64 && (
             <img
               src={`data:image/png;base64,${response.image_preview_base64}`}
@@ -94,5 +98,3 @@ export default function App() {
     </div>
   )
 }
-
-
